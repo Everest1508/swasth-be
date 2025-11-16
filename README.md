@@ -1,8 +1,8 @@
-# 🩺 Nabha Health Connect - Rural Telemedicine Platform
+# Nabha Health Connect - Rural Telemedicine Platform
 
 A comprehensive Django REST Framework backend for enabling rural patients to access healthcare remotely, even with poor connectivity.
 
-## 🚀 Features
+## Features
 
 - **User Management**: Patient, Doctor, Pharmacy, and Admin roles
 - **Authentication**: JWT-based authentication with OTP support for low-literacy users
@@ -15,13 +15,13 @@ A comprehensive Django REST Framework backend for enabling rural patients to acc
 - **Analytics**: Dashboard for health department insights
 - **Offline Support**: Sync endpoints for low-bandwidth scenarios
 
-## 📋 Prerequisites
+## Prerequisites
 
 - Python 3.12+
 - PostgreSQL (optional, SQLite for development)
 - Virtual environment
 
-## 🛠️ Installation
+## Installation
 
 1. **Clone the repository**
    ```bash
@@ -69,7 +69,7 @@ A comprehensive Django REST Framework backend for enabling rural patients to acc
    python manage.py runserver
    ```
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 swasth-be/
@@ -85,7 +85,7 @@ swasth-be/
 └── core/              # Project settings
 ```
 
-## 🔐 API Endpoints
+## API Endpoints
 
 ### Authentication
 - `POST /api/auth/register/` - User registration
@@ -124,14 +124,14 @@ swasth-be/
 ### Analytics
 - `GET /api/analytics/dashboard/` - Admin dashboard (admin only)
 
-## 📚 API Documentation
+## API Documentation
 
 Once the server is running, access the interactive API documentation:
 
 - **Swagger UI**: http://localhost:8000/api/docs/
 - **ReDoc**: http://localhost:8000/api/redoc/
 
-## 🔧 Configuration
+## Configuration
 
 ### Database
 
@@ -153,13 +153,13 @@ JWT_ACCESS_TOKEN_LIFETIME=60  # minutes
 JWT_REFRESH_TOKEN_LIFETIME=1440  # minutes (24 hours)
 ```
 
-## 🧪 Testing
+## Testing
 
 ```bash
 python manage.py test
 ```
 
-## 📝 TODO
+## TODO
 
 - [ ] Implement SMS/WhatsApp notification integration
 - [ ] Add video consultation token generation
@@ -171,17 +171,17 @@ python manage.py test
 - [ ] Setup CI/CD pipeline
 - [ ] Deploy to cloud infrastructure
 
-## 🤝 Contributing
+## Contributing
 
 1. Create a feature branch
 2. Make your changes
 3. Submit a pull request
 
-## 📄 License
+## License
 
 This project is part of the Nabha Health Connect initiative.
 
-## 👥 Team
+## Team
 
 Rural Telemedicine Platform - Punjab Health Department
 
