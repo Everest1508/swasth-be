@@ -1,0 +1,963 @@
+{
+	"info": {
+		"_postman_id": "nabha-health-connect-api",
+		"name": "Nabha Health Connect API",
+		"description": "Rural Telemedicine Platform - Complete API Collection",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "User Registration",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"patient123\",\n    \"email\": \"patient@example.com\",\n    \"password\": \"SecurePass123!\",\n    \"password2\": \"SecurePass123!\",\n    \"phone\": \"9876543210\",\n    \"role\": \"patient\",\n    \"first_name\": \"John\",\n    \"last_name\": \"Doe\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/register/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "register", ""]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login (Get JWT Tokens)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"patient123\",\n    \"password\": \"SecurePass123!\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/token/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "token", ""]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Refresh Access Token",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"refresh\": \"{{refresh_token}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/token/refresh/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "token", "refresh", ""]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Token",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"token\": \"{{access_token}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/token/verify/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "token", "verify", ""]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Request OTP",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"phone\": \"9876543210\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/otp/request/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "otp", "request", ""]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login with OTP",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"phone\": \"9876543210\",\n    \"otp\": \"123456\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/otp/login/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "otp", "login", ""]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get User Profile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/auth/profile/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "profile", ""]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update User Profile",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"first_name\": \"John Updated\",\n    \"last_name\": \"Doe Updated\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/profile/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "profile", ""]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Patients",
+			"item": [
+				{
+					"name": "Create Patient Profile",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"age\": 35,\n    \"gender\": \"M\",\n    \"village\": \"Nabha\",\n    \"district\": \"Patiala\",\n    \"state\": \"Punjab\",\n    \"pincode\": \"147201\",\n    \"emergency_contact\": \"9876543211\",\n    \"blood_group\": \"O+\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/patients/profiles/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "patients", "profiles", ""]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Patient Profile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/patients/profiles/{{patient_id}}/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "patients", "profiles", "{{patient_id}}", ""]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List All Patients",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/patients/profiles/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "patients", "profiles", ""]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Patient Health Records",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/patients/profiles/{{patient_id}}/health_records/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "patients", "profiles", "{{patient_id}}", "health_records", ""]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Health Record",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"patient\": 1,\n    \"record_type\": \"prescription\",\n    \"title\": \"Blood Test Report\",\n    \"description\": \"Complete blood count test results\",\n    \"date\": \"2024-01-15\",\n    \"doctor\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/patients/health-records/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "patients", "health-records", ""]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Doctors",
+			"item": [
+				{
+					"name": "Create Doctor Profile",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"specialization\": \"general\",\n    \"qualification\": \"MBBS, MD\",\n    \"license_number\": \"DOC123456\",\n    \"experience_years\": 10,\n    \"consultation_fee\": 500.00,\n    \"bio\": \"Experienced general physician\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/doctors/profiles/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "doctors", "profiles", ""]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List All Doctors",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/doctors/profiles/?specialization=general&is_available=true",
+							"host": ["{{base_url}}"],
+							"path": ["api", "doctors", "profiles", ""],
+							"query": [
+								{
+									"key": "specialization",
+									"value": "general"
+								},
+								{
+									"key": "is_available",
+									"value": "true"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Doctor Schedule",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/doctors/profiles/{{doctor_id}}/schedule/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "doctors", "profiles", "{{doctor_id}}", "schedule", ""]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Doctor Schedule",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"day\": \"monday\",\n    \"start_time\": \"09:00:00\",\n    \"end_time\": \"17:00:00\",\n    \"is_available\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/doctors/profiles/{{doctor_id}}/schedule/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "doctors", "profiles", "{{doctor_id}}", "schedule", ""]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Appointments",
+			"item": [
+				{
+					"name": "Check Doctor Availability",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"doctor_id\": 1,\n    \"appointment_date\": \"2024-01-20\",\n    \"appointment_time\": \"10:00:00\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/appointments/bookings/check_availability/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "appointments", "bookings", "check_availability", ""]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Book Appointment",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"patient\": 1,\n    \"doctor\": 1,\n    \"appointment_date\": \"2024-01-20\",\n    \"appointment_time\": \"10:00:00\",\n    \"consultation_type\": \"video\",\n    \"symptoms\": \"Fever and cough for 3 days\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/appointments/bookings/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "appointments", "bookings", ""]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Appointments",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/appointments/bookings/?status=pending",
+							"host": ["{{base_url}}"],
+							"path": ["api", "appointments", "bookings", ""],
+							"query": [
+								{
+									"key": "status",
+									"value": "pending"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Complete Appointment",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"consultation_summary\": \"Patient diagnosed with common cold. Prescribed rest and medication.\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/appointments/bookings/{{appointment_id}}/complete/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "appointments", "bookings", "{{appointment_id}}", "complete", ""]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Prescription",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/appointments/prescriptions/{{prescription_id}}/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "appointments", "prescriptions", "{{prescription_id}}", ""]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Medicines",
+			"item": [
+				{
+					"name": "List All Medicines",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/medicines/master/?search=paracetamol",
+							"host": ["{{base_url}}"],
+							"path": ["api", "medicines", "master", ""],
+							"query": [
+								{
+									"key": "search",
+									"value": "paracetamol"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Medicine",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Paracetamol\",\n    \"brand\": \"Crocin\",\n    \"generic_name\": \"Acetaminophen\",\n    \"dosage_form\": \"Tablet\",\n    \"strength\": \"500mg\",\n    \"manufacturer\": \"GSK\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/medicines/master/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "medicines", "master", ""]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Check Medicine Availability",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/medicines/inventory/availability/?medicine_id=1&village=Nabha&district=Patiala",
+							"host": ["{{base_url}}"],
+							"path": ["api", "medicines", "inventory", "availability", ""],
+							"query": [
+								{
+									"key": "medicine_id",
+									"value": "1"
+								},
+								{
+									"key": "village",
+									"value": "Nabha"
+								},
+								{
+									"key": "district",
+									"value": "Patiala"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Low Stock Alerts",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/medicines/inventory/low_stock/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "medicines", "inventory", "low_stock", ""]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Pharmacy Inventory",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"pharmacy\": 1,\n    \"medicine\": 1,\n    \"stock_quantity\": 100,\n    \"price\": 25.50,\n    \"low_stock_threshold\": 10\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/medicines/inventory/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "medicines", "inventory", ""]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Pharmacies",
+			"item": [
+				{
+					"name": "Create Pharmacy Profile",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Nabha Medical Store\",\n    \"address\": \"Main Street, Nabha\",\n    \"village\": \"Nabha\",\n    \"district\": \"Patiala\",\n    \"state\": \"Punjab\",\n    \"pincode\": \"147201\",\n    \"latitude\": \"30.3753\",\n    \"longitude\": \"76.1522\",\n    \"license_number\": \"PHARM123456\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/pharmacies/profiles/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "pharmacies", "profiles", ""]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List All Pharmacies",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/pharmacies/profiles/?village=Nabha&is_active=true",
+							"host": ["{{base_url}}"],
+							"path": ["api", "pharmacies", "profiles", ""],
+							"query": [
+								{
+									"key": "village",
+									"value": "Nabha"
+								},
+								{
+									"key": "is_active",
+									"value": "true"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Find Nearest Pharmacies",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/pharmacies/profiles/nearest/?latitude=30.3753&longitude=76.1522",
+							"host": ["{{base_url}}"],
+							"path": ["api", "pharmacies", "profiles", "nearest", ""],
+							"query": [
+								{
+									"key": "latitude",
+									"value": "30.3753"
+								},
+								{
+									"key": "longitude",
+									"value": "76.1522"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "AI Symptom Checker",
+			"item": [
+				{
+					"name": "Check Symptoms",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"symptoms\": \"fever, cough, headache, body ache\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/ai-symptom-checker/check/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "ai-symptom-checker", "check", ""]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Symptom Check History",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/ai-symptom-checker/history/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "ai-symptom-checker", "history", ""]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Notifications",
+			"item": [
+				{
+					"name": "Get All Notifications",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/notifications/?is_read=false",
+							"host": ["{{base_url}}"],
+							"path": ["api", "notifications", ""],
+							"query": [
+								{
+									"key": "is_read",
+									"value": "false"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Mark Notification as Read",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/notifications/{{notification_id}}/mark_read/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "notifications", "{{notification_id}}", "mark_read", ""]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Mark All Notifications as Read",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/notifications/mark_all_read/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "notifications", "mark_all_read", ""]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Unread Count",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/notifications/unread_count/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "notifications", "unread_count", ""]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Analytics",
+			"item": [
+				{
+					"name": "Get Dashboard Analytics (Admin Only)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/analytics/dashboard/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "analytics", "dashboard", ""]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Doctor Availability Metrics",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/analytics/doctor-availability/?doctor_id=1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "analytics", "doctor-availability", ""],
+							"query": [
+								{
+									"key": "doctor_id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Health Issues Metrics",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/analytics/health-issues/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "analytics", "health-issues", ""]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string"
+		},
+		{
+			"key": "access_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "refresh_token",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
+
