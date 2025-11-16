@@ -18,6 +18,7 @@ class Medicine(models.Model):
     
     class Meta:
         db_table = 'medicines'
+        ordering = ['name']
         indexes = [
             models.Index(fields=['name']),
             models.Index(fields=['generic_name']),
@@ -42,6 +43,7 @@ class PharmacyInventory(models.Model):
     
     class Meta:
         db_table = 'pharmacy_inventory'
+        ordering = ['-last_updated']
         unique_together = ['pharmacy', 'medicine']
         indexes = [
             models.Index(fields=['pharmacy', 'stock_quantity']),

@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block title %}Nabha Health Connect - Rural Telemedicine Platform{% endblock %}
+
+{% block content %}
+<!-- Navigation -->
+<nav class="bg-white shadow-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-16">
+            <div class="flex items-center">
+                <h1 class="text-2xl font-bold text-primary">Nabha Health Connect</h1>
+            </div>
+            <div class="flex items-center space-x-4">
+                <a href="{% url 'apply_doctor' %}" class="text-gray-700 hover:text-primary px-4 py-2">Apply as Doctor</a>
+                <a href="{% url 'apply_pharmacy' %}" class="text-gray-700 hover:text-primary px-4 py-2">Apply as Pharmacy</a>
+                <a href="{% url 'login' %}" class="bg-primary text-white px-6 py-2 rounded-lg hover:bg-green-600 transition">Login</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Hero Section -->
+<section class="bg-gradient-to-r from-primary to-green-600 text-white py-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h2 class="text-4xl md:text-5xl font-bold mb-4">Rural Telemedicine Platform</h2>
+        <p class="text-xl text-green-100 mb-8">Connecting rural patients with healthcare professionals</p>
+        <div class="flex justify-center space-x-4">
+            <a href="{% url 'apply_doctor' %}" class="bg-white text-primary px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition">Join as Doctor</a>
+            <a href="{% url 'apply_pharmacy' %}" class="bg-green-700 text-white px-8 py-3 rounded-lg font-semibold hover:bg-green-800 transition">Join as Pharmacy</a>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-16 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h3 class="text-3xl font-bold text-center mb-12">Platform Features</h3>
+        <div class="grid md:grid-cols-3 gap-8">
+            <div class="text-center p-6">
+                <div class="bg-primary/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-video text-3xl text-primary"></i>
+                </div>
+                <h4 class="text-xl font-semibold mb-2">Teleconsultations</h4>
+                <p class="text-gray-600">Video, audio, and chat consultations for remote patients</p>
+            </div>
+            <div class="text-center p-6">
+                <div class="bg-primary/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-pills text-3xl text-primary"></i>
+                </div>
+                <h4 class="text-xl font-semibold mb-2">Medicine Management</h4>
+                <p class="text-gray-600">Real-time inventory tracking and availability</p>
+            </div>
+            <div class="text-center p-6">
+                <div class="bg-primary/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-brain text-3xl text-primary"></i>
+                </div>
+                <h4 class="text-xl font-semibold mb-2">AI Symptom Checker</h4>
+                <p class="text-gray-600">AI-powered preliminary symptom analysis</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+

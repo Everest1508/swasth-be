@@ -1,0 +1,918 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Dashboard - Nabha Health Connect{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <!-- Sidebar -->
+    <div class="fixed inset-y-0 left-0 w-64 bg-white shadow-xl z-30">
+        <div class="h-full flex flex-col">
+            <!-- Logo -->
+            <div class="p-6 border-b border-gray-200">
+                <h1 class="text-2xl font-bold text-primary">
+                    <i class="fas fa-heartbeat mr-2"></i>Nabha Health
+                </h1>
+                <p class="text-xs text-gray-500 mt-1">Admin Portal</p>
+            </div>
+            
+            <!-- Navigation -->
+            <nav class="flex-1 px-4 py-6 space-y-2">
+                <button onclick="showSection('applications')" id="nav-applications" 
+                    class="w-full flex items-center px-4 py-3 text-left rounded-lg transition-all duration-200 bg-primary text-white shadow-md">
+                    <i class="fas fa-file-alt w-5 mr-3"></i>
+                    <span class="font-medium">Applications</span>
+                </button>
+                <button onclick="showSection('users')" id="nav-users" 
+                    class="w-full flex items-center px-4 py-3 text-left rounded-lg transition-all duration-200 text-gray-700 hover:bg-gray-100">
+                    <i class="fas fa-users w-5 mr-3"></i>
+                    <span class="font-medium">Users</span>
+                </button>
+                <button onclick="showSection('smtp')" id="nav-smtp" 
+                    class="w-full flex items-center px-4 py-3 text-left rounded-lg transition-all duration-200 text-gray-700 hover:bg-gray-100">
+                    <i class="fas fa-envelope w-5 mr-3"></i>
+                    <span class="font-medium">SMTP Settings</span>
+                </button>
+            </nav>
+            
+            <!-- User Info -->
+            <div class="p-4 border-t border-gray-200">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white font-semibold">
+                        {{ user.username|first|upper }}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-gray-900 truncate">{{ user.get_full_name|default:user.username }}</p>
+                        <p class="text-xs text-gray-500">Administrator</p>
+                    </div>
+                </div>
+                <a href="{% url 'logout' %}" class="mt-3 w-full block text-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition">
+                    <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="ml-64">
+        <!-- Header -->
+        <header class="bg-white shadow-sm border-b border-gray-200">
+            <div class="px-8 py-4">
+                <h2 class="text-2xl font-bold text-gray-800">Dashboard</h2>
+                <p class="text-sm text-gray-500 mt-1">Manage applications and system settings</p>
+            </div>
+        </header>
+
+        <!-- Applications Section -->
+        <div id="applications" class="p-8">
+            <div class="max-w-7xl mx-auto">
+                <!-- Section Header -->
+                <div class="mb-6">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-2">Pending Applications</h3>
+                    <p class="text-gray-600">Review and approve doctor and pharmacy applications</p>
+                </div>
+
+                <!-- Filter Buttons -->
+                <div class="mb-6 flex space-x-3">
+                    <button onclick="loadApplications('doctor')" id="btn-doctors" 
+                        class="px-6 py-3 bg-primary text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all duration-200 transform hover:-translate-y-0.5">
+                        <i class="fas fa-user-md mr-2"></i>Doctor Applications
+                    </button>
+                    <button onclick="loadApplications('pharmacy')" id="btn-pharmacies" 
+                        class="px-6 py-3 bg-gray-400 text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all duration-200 transform hover:-translate-y-0.5 hover:bg-blue-500">
+                        <i class="fas fa-pills mr-2"></i>Pharmacy Applications
+                    </button>
+                </div>
+
+                <!-- Applications List -->
+                <div id="applicationsList" class="space-y-4">
+                    <div class="bg-white rounded-xl shadow-md p-12 text-center">
+                        <i class="fas fa-spinner fa-spin text-4xl text-primary mb-4"></i>
+                        <p class="text-gray-600">Loading applications...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Users Section -->
+        <div id="users" class="p-8" style="display: none;">
+            <div class="max-w-7xl mx-auto">
+                <!-- Section Header -->
+                <div class="mb-6">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-2">Users Management</h3>
+                    <p class="text-gray-600">View and manage all doctors, pharmacists, and patients</p>
+                </div>
+
+                <!-- Filter Buttons -->
+                <div class="mb-6 flex space-x-3">
+                    <button onclick="loadUsers('doctor')" id="btn-users-doctors" 
+                        class="px-6 py-3 bg-primary text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all duration-200 transform hover:-translate-y-0.5">
+                        <i class="fas fa-user-md mr-2"></i>Doctors
+                    </button>
+                    <button onclick="loadUsers('pharmacy')" id="btn-users-pharmacies" 
+                        class="px-6 py-3 bg-blue-500 text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all duration-200 transform hover:-translate-y-0.5">
+                        <i class="fas fa-pills mr-2"></i>Pharmacies
+                    </button>
+                    <button onclick="loadUsers('patient')" id="btn-users-patients" 
+                        class="px-6 py-3 bg-purple-500 text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all duration-200 transform hover:-translate-y-0.5">
+                        <i class="fas fa-user-injured mr-2"></i>Patients
+                    </button>
+                </div>
+
+                <!-- Users List -->
+                <div id="usersList" class="space-y-4">
+                    <div class="bg-white rounded-xl shadow-md p-12 text-center">
+                        <i class="fas fa-spinner fa-spin text-4xl text-primary mb-4"></i>
+                        <p class="text-gray-600">Loading users...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SMTP Settings Section -->
+        <div id="smtp" class="p-8" style="display: none;">
+            <div class="max-w-7xl mx-auto">
+                <!-- Section Header -->
+                <div class="mb-6 flex justify-between items-center">
+                    <div>
+                        <h3 class="text-2xl font-bold text-gray-800 mb-2">SMTP Configuration</h3>
+                        <p class="text-gray-600">Manage email server settings for notifications</p>
+                    </div>
+                    <button onclick="showSMTPForm()" 
+                        class="px-6 py-3 bg-primary text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all duration-200 transform hover:-translate-y-0.5">
+                        <i class="fas fa-plus mr-2"></i>Add Configuration
+                    </button>
+                </div>
+                
+                <!-- SMTP Configurations List -->
+                <div id="smtpList" class="space-y-4 mb-6">
+                    <div class="bg-white rounded-xl shadow-md p-12 text-center">
+                        <i class="fas fa-spinner fa-spin text-4xl text-primary mb-4"></i>
+                        <p class="text-gray-600">Loading SMTP configurations...</p>
+                    </div>
+                </div>
+
+                <!-- SMTP Form (hidden by default) -->
+                <div id="smtpFormContainer" class="hidden">
+                    <div class="bg-white rounded-xl shadow-md p-6 border-t-4 border-primary">
+                        <h4 class="text-xl font-bold text-gray-800 mb-6" id="smtpFormTitle">Add SMTP Configuration</h4>
+                        <form id="smtpForm" class="space-y-6">
+                            <input type="hidden" id="smtpId" name="id">
+                            
+                            <div class="grid md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Configuration Name *</label>
+                                    <input type="text" id="smtpName" name="name" required
+                                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition"
+                                        placeholder="e.g., Gmail SMTP">
+                                </div>
+                                <div class="flex items-end">
+                                    <label class="flex items-center space-x-3 cursor-pointer">
+                                        <input type="checkbox" id="smtpIsActive" name="is_active"
+                                            class="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary">
+                                        <span class="text-sm font-semibold text-gray-700">Mark as Active</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="grid md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">SMTP Host *</label>
+                                    <input type="text" id="smtpHost" name="host" required
+                                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition"
+                                        placeholder="smtp.gmail.com">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Port *</label>
+                                    <input type="number" id="smtpPort" name="port" required
+                                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition"
+                                        placeholder="587" value="587">
+                                </div>
+                            </div>
+
+                            <div class="grid md:grid-cols-2 gap-6">
+                                <div class="flex items-center space-x-6">
+                                    <label class="flex items-center space-x-3 cursor-pointer">
+                                        <input type="checkbox" id="smtpUseTLS" name="use_tls"
+                                            class="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary" checked>
+                                        <span class="text-sm font-semibold text-gray-700">Use TLS</span>
+                                    </label>
+                                    <label class="flex items-center space-x-3 cursor-pointer">
+                                        <input type="checkbox" id="smtpUseSSL" name="use_ssl"
+                                            class="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary">
+                                        <span class="text-sm font-semibold text-gray-700">Use SSL</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="grid md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Username *</label>
+                                    <input type="text" id="smtpUsername" name="username" required
+                                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition"
+                                        placeholder="your-email@gmail.com">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                        Password <span id="passwordRequired" class="text-red-500">*</span>
+                                        <span class="text-xs text-gray-500 font-normal" id="passwordHint">(Leave blank to keep existing)</span>
+                                    </label>
+                                    <input type="password" id="smtpPassword" name="password"
+                                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition"
+                                        placeholder="Your SMTP password">
+                                </div>
+                            </div>
+
+                            <div class="grid md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">From Email *</label>
+                                    <input type="email" id="smtpFromEmail" name="from_email" required
+                                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition"
+                                        placeholder="noreply@nabhahealth.com">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">From Name</label>
+                                    <input type="text" id="smtpFromName" name="from_name"
+                                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition"
+                                        placeholder="Nabha Health Connect" value="Nabha Health Connect">
+                                </div>
+                            </div>
+
+                            <div class="flex justify-end space-x-4 pt-4 border-t border-gray-200">
+                                <button type="button" onclick="hideSMTPForm()" 
+                                    class="px-6 py-3 border-2 border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition">
+                                    Cancel
+                                </button>
+                                <button type="submit" 
+                                    class="px-6 py-3 bg-primary text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all duration-200">
+                                    <i class="fas fa-save mr-2"></i>Save Configuration
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Section navigation
+function showSection(sectionName) {
+    // Prevent default and stop propagation
+    event.preventDefault();
+    event.stopPropagation();
+    
+    // Hide all sections
+    document.getElementById('applications').style.display = 'none';
+    document.getElementById('smtp').style.display = 'none';
+    
+    // Reset navigation buttons
+    document.getElementById('nav-applications').className = 'w-full flex items-center px-4 py-3 text-left rounded-lg transition-all duration-200 text-gray-700 hover:bg-gray-100';
+    document.getElementById('nav-smtp').className = 'w-full flex items-center px-4 py-3 text-left rounded-lg transition-all duration-200 text-gray-700 hover:bg-gray-100';
+    
+    // Show selected section and highlight nav
+    if (sectionName === 'applications') {
+        document.getElementById('applications').style.display = 'block';
+        document.getElementById('nav-applications').className = 'w-full flex items-center px-4 py-3 text-left rounded-lg transition-all duration-200 bg-primary text-white shadow-md';
+        // Load applications
+        const listContent = document.getElementById('applicationsList').innerHTML.trim();
+        if (!listContent || listContent.includes('Loading') || listContent.includes('will be loaded')) {
+            loadApplications('doctor');
+        }
+    } else if (sectionName === 'smtp') {
+        document.getElementById('smtp').style.display = 'block';
+        document.getElementById('nav-smtp').className = 'w-full flex items-center px-4 py-3 text-left rounded-lg transition-all duration-200 bg-primary text-white shadow-md';
+        // Load SMTP configurations
+        loadSMTPConfigurations();
+    }
+    
+    // Update URL without hash
+    if (window.history && window.history.pushState) {
+        window.history.pushState(null, null, '/dashboard/');
+    }
+}
+
+// Load applications
+async function loadApplications(type = 'doctor') {
+    currentApplicationType = type;
+    const list = document.getElementById('applicationsList');
+    list.innerHTML = '<div class="bg-white rounded-xl shadow-md p-12 text-center"><i class="fas fa-spinner fa-spin text-4xl text-primary mb-4"></i><p class="text-gray-600">Loading applications...</p></div>';
+    
+    // Update button states
+    if (type === 'doctor') {
+        document.getElementById('btn-doctors').className = 'px-6 py-3 bg-primary text-white rounded-lg font-medium shadow-lg transition-all duration-200 transform hover:-translate-y-0.5';
+        document.getElementById('btn-pharmacies').className = 'px-6 py-3 bg-gray-400 text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all duration-200 transform hover:-translate-y-0.5 hover:bg-blue-500';
+    } else {
+        document.getElementById('btn-doctors').className = 'px-6 py-3 bg-gray-400 text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all duration-200 transform hover:-translate-y-0.5 hover:bg-primary';
+        document.getElementById('btn-pharmacies').className = 'px-6 py-3 bg-blue-500 text-white rounded-lg font-medium shadow-lg transition-all duration-200 transform hover:-translate-y-0.5';
+    }
+    
+    try {
+        const endpoint = type === 'pharmacy' ? 'pharmacies' : `${type}s`;
+        const response = await fetch(`/api/applications/${endpoint}/?status=pending`, {
+            credentials: 'include'
+        });
+        
+        if (!response.ok) {
+            if (response.status === 401) {
+                showModal('Error', 'You are not authorized. Please login again.', 'error', function() {
+                    window.location.href = '{% url "login" %}';
+                });
+                return;
+            }
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.detail || 'Failed to load applications');
+        }
+        
+        const data = await response.json();
+        const applications = data.results || data || [];
+        
+        if (applications.length === 0) {
+            list.innerHTML = `
+                <div class="bg-white rounded-xl shadow-md p-12 text-center">
+                    <i class="fas fa-inbox text-6xl text-gray-300 mb-4"></i>
+                    <p class="text-xl font-semibold text-gray-600 mb-2">No Pending ${type === 'doctor' ? 'Doctor' : 'Pharmacy'} Applications</p>
+                    <p class="text-gray-500">All applications have been processed.</p>
+                </div>
+            `;
+            return;
+        }
+        
+        if (type === 'doctor') {
+            list.innerHTML = applications.map(app => `
+                <div class="bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-200 border-l-4 border-primary">
+                    <div class="p-6">
+                        <div class="flex justify-between items-start">
+                            <div class="flex-1">
+                                <div class="flex items-center space-x-3 mb-3">
+                                    <div class="w-12 h-12 bg-primary rounded-full flex items-center justify-center text-white text-xl">
+                                        <i class="fas fa-user-md"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-xl font-bold text-gray-800">Dr. ${app.first_name} ${app.last_name}</h4>
+                                        <p class="text-sm text-gray-500">${app.specialization}</p>
+                                    </div>
+                                </div>
+                                <div class="ml-15 space-y-2">
+                                    <p class="text-gray-600"><i class="fas fa-envelope mr-2 text-primary"></i>${app.email}</p>
+                                    <p class="text-gray-600"><i class="fas fa-phone mr-2 text-primary"></i>${app.phone}</p>
+                                    <p class="text-gray-600"><i class="fas fa-certificate mr-2 text-primary"></i>License: ${app.license_number}</p>
+                                    <p class="text-gray-600"><i class="fas fa-graduation-cap mr-2 text-primary"></i>${app.qualification}</p>
+                                    ${app.experience_years ? `<p class="text-gray-600"><i class="fas fa-calendar mr-2 text-primary"></i>${app.experience_years} years experience</p>` : ''}
+                                </div>
+                            </div>
+                            <div class="flex flex-col space-y-2 ml-4">
+                                <button onclick="approveApplication('doctor', ${app.id})" 
+                                    class="px-6 py-3 bg-primary text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all duration-200 transform hover:-translate-y-0.5">
+                                    <i class="fas fa-check mr-2"></i>Approve
+                                </button>
+                                <button onclick="rejectApplication('doctor', ${app.id})" 
+                                    class="px-6 py-3 bg-red-500 text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all duration-200 transform hover:-translate-y-0.5">
+                                    <i class="fas fa-times mr-2"></i>Reject
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        } else {
+            list.innerHTML = applications.map(app => `
+                <div class="bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-200 border-l-4 border-blue-500">
+                    <div class="p-6">
+                        <div class="flex justify-between items-start">
+                            <div class="flex-1">
+                                <div class="flex items-center space-x-3 mb-3">
+                                    <div class="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white text-xl">
+                                        <i class="fas fa-pills"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-xl font-bold text-gray-800">${app.pharmacy_name}</h4>
+                                        <p class="text-sm text-gray-500">${app.village}, ${app.district}</p>
+                                    </div>
+                                </div>
+                                <div class="ml-15 space-y-2">
+                                    <p class="text-gray-600"><i class="fas fa-user mr-2 text-blue-500"></i>Owner: ${app.owner_name}</p>
+                                    <p class="text-gray-600"><i class="fas fa-envelope mr-2 text-blue-500"></i>${app.email}</p>
+                                    <p class="text-gray-600"><i class="fas fa-phone mr-2 text-blue-500"></i>${app.phone}</p>
+                                    <p class="text-gray-600"><i class="fas fa-certificate mr-2 text-blue-500"></i>License: ${app.license_number}</p>
+                                    <p class="text-gray-600"><i class="fas fa-map-marker-alt mr-2 text-blue-500"></i>${app.address}</p>
+                                </div>
+                            </div>
+                            <div class="flex flex-col space-y-2 ml-4">
+                                <button onclick="approveApplication('pharmacy', ${app.id})" 
+                                    class="px-6 py-3 bg-primary text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all duration-200 transform hover:-translate-y-0.5">
+                                    <i class="fas fa-check mr-2"></i>Approve
+                                </button>
+                                <button onclick="rejectApplication('pharmacy', ${app.id})" 
+                                    class="px-6 py-3 bg-red-500 text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all duration-200 transform hover:-translate-y-0.5">
+                                    <i class="fas fa-times mr-2"></i>Reject
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+    } catch (error) {
+        console.error('Error loading applications:', error);
+        list.innerHTML = `
+            <div class="bg-red-50 border-2 border-red-200 rounded-xl p-8 text-center">
+                <i class="fas fa-exclamation-triangle text-4xl text-red-500 mb-4"></i>
+                <p class="text-red-600 font-semibold mb-2">Error loading applications</p>
+                <p class="text-red-500 text-sm">${error.message}</p>
+            </div>
+        `;
+        showModal('Error', `Failed to load applications: ${error.message}`, 'error');
+    }
+}
+
+async function approveApplication(type, id) {
+    try {
+        const endpoint = type === 'pharmacy' ? 'pharmacies' : `${type}s`;
+        const response = await fetch(`/api/applications/${endpoint}/${id}/approve/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            credentials: 'include',
+            body: JSON.stringify({ status: 'approved' })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            showModal('Success', 'Application approved successfully! User account has been created and email sent.', 'success', function() {
+                loadApplications(currentApplicationType);
+            });
+        } else {
+            const errorMsg = data.error || data.detail || 'Failed to approve application';
+            showModal('Error', errorMsg, 'error');
+        }
+    } catch (error) {
+        showModal('Error', 'Error processing approval. Please try again.', 'error');
+    }
+}
+
+async function rejectApplication(type, id) {
+    showInputModal('Rejection Reason', 'Please provide a reason for rejection:', async function(reason) {
+        try {
+            const endpoint = type === 'pharmacy' ? 'pharmacies' : `${type}s`;
+            const response = await fetch(`/api/applications/${endpoint}/${id}/approve/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                credentials: 'include',
+                body: JSON.stringify({ status: 'rejected', rejection_reason: reason })
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok) {
+                showModal('Success', 'Application rejected. Email notification has been sent.', 'success', function() {
+                    loadApplications(currentApplicationType);
+                });
+            } else {
+                const errorMsg = data.error || data.detail || 'Failed to reject application';
+                showModal('Error', errorMsg, 'error');
+            }
+        } catch (error) {
+            showModal('Error', 'Error processing rejection. Please try again.', 'error');
+        }
+    });
+}
+
+let currentApplicationType = 'doctor';
+
+// SMTP Configuration Functions
+async function loadSMTPConfigurations() {
+    const list = document.getElementById('smtpList');
+    list.innerHTML = '<div class="bg-white rounded-xl shadow-md p-12 text-center"><i class="fas fa-spinner fa-spin text-4xl text-primary mb-4"></i><p class="text-gray-600">Loading SMTP configurations...</p></div>';
+    
+    try {
+        const response = await fetch('/api/smtp/', {
+            credentials: 'include'
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to load SMTP configurations');
+        }
+        
+        const data = await response.json();
+        const configs = data.results || data || [];
+        
+        if (configs.length === 0) {
+            list.innerHTML = `
+                <div class="bg-white rounded-xl shadow-md p-12 text-center">
+                    <i class="fas fa-envelope text-6xl text-gray-300 mb-4"></i>
+                    <p class="text-xl font-semibold text-gray-600 mb-2">No SMTP Configurations</p>
+                    <p class="text-gray-500 mb-4">Click "Add Configuration" to create your first SMTP setup.</p>
+                </div>
+            `;
+            return;
+        }
+        
+        // Remove any existing warning banner
+        const existingWarning = list.parentNode.querySelector('.smtp-warning-banner');
+        if (existingWarning) {
+            existingWarning.remove();
+        }
+        
+        // Check if there's an active configuration
+        const hasActive = configs.some(c => c.is_active);
+        if (!hasActive && configs.length > 0) {
+            // Show warning banner
+            const warningBanner = document.createElement('div');
+            warningBanner.className = 'smtp-warning-banner mb-4 bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-lg';
+            warningBanner.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas fa-exclamation-triangle text-yellow-600 text-xl mr-3"></i>
+                    <div>
+                        <p class="font-semibold text-yellow-800">No Active SMTP Configuration</p>
+                        <p class="text-sm text-yellow-700">Please mark at least one SMTP configuration as active to enable email notifications.</p>
+                    </div>
+                </div>
+            `;
+            list.parentNode.insertBefore(warningBanner, list);
+        }
+        
+        list.innerHTML = configs.map(config => `
+            <div class="bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-200 border-l-4 ${config.is_active ? 'border-green-500 bg-green-50' : 'border-gray-300'}">
+                <div class="p-6">
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <div class="flex items-center space-x-3 mb-3">
+                                <div class="w-12 h-12 ${config.is_active ? 'bg-green-500' : 'bg-gray-400'} rounded-full flex items-center justify-center text-white text-xl">
+                                    <i class="fas fa-server"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-xl font-bold text-gray-800">${config.name}</h4>
+                                    ${config.is_active ? '<span class="px-3 py-1 bg-green-500 text-white text-xs rounded-full font-semibold">Active</span>' : '<span class="px-3 py-1 bg-gray-400 text-white text-xs rounded-full font-semibold">Inactive</span>'}
+                                </div>
+                            </div>
+                            <div class="ml-15 space-y-2">
+                                <p class="text-gray-600"><i class="fas fa-server mr-2 text-primary"></i>${config.host}:${config.port}</p>
+                                <p class="text-gray-600"><i class="fas fa-shield-alt mr-2 text-primary"></i>${config.use_tls ? 'TLS' : ''} ${config.use_ssl ? 'SSL' : ''}</p>
+                                <p class="text-gray-600"><i class="fas fa-envelope mr-2 text-primary"></i>${config.from_name} &lt;${config.from_email}&gt;</p>
+                            </div>
+                        </div>
+                        <div class="flex flex-col space-y-2 ml-4">
+                            <button onclick="editSMTPConfig(${config.id})" 
+                                class="px-4 py-2 bg-blue-500 text-white rounded-lg font-medium shadow-md hover:shadow-lg transition">
+                                <i class="fas fa-edit mr-2"></i>Edit
+                            </button>
+                            <button onclick="testSMTPConfig(${config.id})" 
+                                class="px-4 py-2 bg-yellow-500 text-white rounded-lg font-medium shadow-md hover:shadow-lg transition">
+                                <i class="fas fa-paper-plane mr-2"></i>Test
+                            </button>
+                            <button onclick="deleteSMTPConfig(${config.id})" 
+                                class="px-4 py-2 bg-red-500 text-white rounded-lg font-medium shadow-md hover:shadow-lg transition">
+                                <i class="fas fa-trash mr-2"></i>Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    } catch (error) {
+        list.innerHTML = `
+            <div class="bg-red-50 border-2 border-red-200 rounded-xl p-8 text-center">
+                <i class="fas fa-exclamation-triangle text-4xl text-red-500 mb-4"></i>
+                <p class="text-red-600 font-semibold">Error loading SMTP configurations</p>
+            </div>
+        `;
+        showModal('Error', 'Failed to load SMTP configurations.', 'error');
+    }
+}
+
+function showSMTPForm(config = null) {
+    const formContainer = document.getElementById('smtpFormContainer');
+    const formTitle = document.getElementById('smtpFormTitle');
+    
+    if (config) {
+        formTitle.textContent = 'Edit SMTP Configuration';
+        document.getElementById('smtpId').value = config.id;
+        document.getElementById('smtpName').value = config.name;
+        document.getElementById('smtpHost').value = config.host;
+        document.getElementById('smtpPort').value = config.port;
+        document.getElementById('smtpUseTLS').checked = config.use_tls;
+        document.getElementById('smtpUseSSL').checked = config.use_ssl;
+        document.getElementById('smtpUsername').value = config.username;
+        document.getElementById('smtpPassword').value = '';
+        document.getElementById('smtpPassword').required = false;
+        document.getElementById('passwordRequired').classList.add('hidden');
+        document.getElementById('passwordHint').classList.remove('hidden');
+        document.getElementById('smtpFromEmail').value = config.from_email;
+        document.getElementById('smtpFromName').value = config.from_name;
+        document.getElementById('smtpIsActive').checked = config.is_active;
+    } else {
+        formTitle.textContent = 'Add SMTP Configuration';
+        document.getElementById('smtpForm').reset();
+        document.getElementById('smtpId').value = '';
+        document.getElementById('smtpPort').value = '587';
+        document.getElementById('smtpUseTLS').checked = true;
+        document.getElementById('smtpFromName').value = 'Nabha Health Connect';
+        document.getElementById('smtpPassword').required = true;
+        document.getElementById('passwordRequired').classList.remove('hidden');
+        document.getElementById('passwordHint').classList.add('hidden');
+    }
+    
+    formContainer.classList.remove('hidden');
+    formContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function hideSMTPForm() {
+    document.getElementById('smtpFormContainer').classList.add('hidden');
+    document.getElementById('smtpForm').reset();
+}
+
+async function editSMTPConfig(id) {
+    try {
+        const response = await fetch(`/api/smtp/${id}/`, {
+            credentials: 'include'
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to load configuration');
+        }
+        
+        const config = await response.json();
+        showSMTPForm(config);
+    } catch (error) {
+        showModal('Error', 'Failed to load SMTP configuration.', 'error');
+    }
+}
+
+async function testSMTPConfig(id) {
+    showInputModal('Test Email', 'Enter email address to send test email:', function(testEmail) {
+        if (!testEmail || !testEmail.includes('@')) {
+            showModal('Error', 'Please enter a valid email address.', 'error');
+            return;
+        }
+        
+        fetch(`/api/smtp/${id}/test/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            credentials: 'include',
+            body: JSON.stringify({ test_email: testEmail })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.message) {
+                showModal('Success', data.message, 'success');
+            } else {
+                showModal('Error', data.error || 'Failed to send test email', 'error');
+            }
+        })
+        .catch(error => {
+            showModal('Error', 'Error sending test email.', 'error');
+        });
+    });
+}
+
+async function deleteSMTPConfig(id) {
+    showInputModal('Confirm Deletion', 'Type "DELETE" to confirm deletion:', function(confirmation) {
+        if (confirmation !== 'DELETE') {
+            showModal('Cancelled', 'Deletion cancelled.', 'info');
+            return;
+        }
+        
+        fetch(`/api/smtp/${id}/`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            credentials: 'include'
+        })
+        .then(response => {
+            if (response.ok) {
+                showModal('Success', 'SMTP configuration deleted successfully.', 'success', function() {
+                    loadSMTPConfigurations();
+                });
+            } else {
+                showModal('Error', 'Failed to delete SMTP configuration.', 'error');
+            }
+        })
+        .catch(error => {
+            showModal('Error', 'Error deleting SMTP configuration.', 'error');
+        });
+    });
+}
+
+// Handle SMTP form submission
+document.getElementById('smtpForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData);
+    const id = data.id;
+    
+    data.use_tls = document.getElementById('smtpUseTLS').checked;
+    data.use_ssl = document.getElementById('smtpUseSSL').checked;
+    data.is_active = document.getElementById('smtpIsActive').checked;
+    data.port = parseInt(data.port);
+    
+    if (id && !data.password) {
+        delete data.password;
+    }
+    
+    try {
+        const url = id ? `/api/smtp/${id}/` : '/api/smtp/';
+        const method = id ? 'PATCH' : 'POST';
+        
+        const response = await fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            credentials: 'include',
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            showModal('Success', `SMTP configuration ${id ? 'updated' : 'created'} successfully!`, 'success', function() {
+                hideSMTPForm();
+                loadSMTPConfigurations();
+            });
+        } else {
+            const errorMsg = result.error || result.detail || 'Failed to save SMTP configuration';
+            showModal('Error', errorMsg, 'error');
+        }
+    } catch (error) {
+        showModal('Error', 'Error saving SMTP configuration.', 'error');
+    }
+});
+
+// Load users
+async function loadUsers(type = 'doctor') {
+    const list = document.getElementById('usersList');
+    list.innerHTML = '<div class="bg-white rounded-xl shadow-md p-12 text-center"><i class="fas fa-spinner fa-spin text-4xl text-primary mb-4"></i><p class="text-gray-600">Loading users...</p></div>';
+    
+    // Update button states
+    document.getElementById('btn-users-doctors').classList.remove('bg-primary', 'shadow-lg');
+    document.getElementById('btn-users-pharmacies').classList.remove('bg-blue-500', 'shadow-lg');
+    document.getElementById('btn-users-patients').classList.remove('bg-purple-500', 'shadow-lg');
+    
+    if (type === 'doctor') {
+        document.getElementById('btn-users-doctors').className = 'px-6 py-3 bg-primary text-white rounded-lg font-medium shadow-lg transition-all duration-200 transform hover:-translate-y-0.5';
+        document.getElementById('btn-users-pharmacies').className = 'px-6 py-3 bg-gray-400 text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all duration-200 transform hover:-translate-y-0.5 hover:bg-blue-500';
+        document.getElementById('btn-users-patients').className = 'px-6 py-3 bg-gray-400 text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all duration-200 transform hover:-translate-y-0.5 hover:bg-purple-500';
+    } else if (type === 'pharmacy') {
+        document.getElementById('btn-users-doctors').className = 'px-6 py-3 bg-gray-400 text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all duration-200 transform hover:-translate-y-0.5 hover:bg-primary';
+        document.getElementById('btn-users-pharmacies').className = 'px-6 py-3 bg-blue-500 text-white rounded-lg font-medium shadow-lg transition-all duration-200 transform hover:-translate-y-0.5';
+        document.getElementById('btn-users-patients').className = 'px-6 py-3 bg-gray-400 text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all duration-200 transform hover:-translate-y-0.5 hover:bg-purple-500';
+    } else {
+        document.getElementById('btn-users-doctors').className = 'px-6 py-3 bg-gray-400 text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all duration-200 transform hover:-translate-y-0.5 hover:bg-primary';
+        document.getElementById('btn-users-pharmacies').className = 'px-6 py-3 bg-gray-400 text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all duration-200 transform hover:-translate-y-0.5 hover:bg-blue-500';
+        document.getElementById('btn-users-patients').className = 'px-6 py-3 bg-purple-500 text-white rounded-lg font-medium shadow-lg transition-all duration-200 transform hover:-translate-y-0.5';
+    }
+    
+    try {
+        let endpoint;
+        if (type === 'doctor') {
+            endpoint = '/api/doctors/profiles/';
+        } else if (type === 'pharmacy') {
+            endpoint = '/api/pharmacies/profiles/';
+        } else {
+            endpoint = '/api/patients/profiles/';
+        }
+        
+        const response = await fetch(endpoint, {
+            credentials: 'include'
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to load users');
+        }
+        
+        const data = await response.json();
+        const users = data.results || data || [];
+        
+        if (users.length === 0) {
+            list.innerHTML = `
+                <div class="bg-white rounded-xl shadow-md p-12 text-center">
+                    <i class="fas fa-${type === 'doctor' ? 'user-md' : type === 'pharmacy' ? 'pills' : 'user-injured'} text-6xl text-gray-300 mb-4"></i>
+                    <p class="text-xl font-semibold text-gray-600 mb-2">No ${type === 'doctor' ? 'Doctors' : type === 'pharmacy' ? 'Pharmacies' : 'Patients'} Found</p>
+                    <p class="text-gray-500">No ${type === 'doctor' ? 'doctors' : type === 'pharmacy' ? 'pharmacies' : 'patients'} have been registered yet.</p>
+                </div>
+            `;
+            return;
+        }
+        
+        if (type === 'doctor') {
+            list.innerHTML = users.map(doctor => `
+                <div class="bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-200 border-l-4 border-primary">
+                    <div class="p-6">
+                        <div class="flex justify-between items-start">
+                            <div class="flex-1">
+                                <div class="flex items-center space-x-3 mb-3">
+                                    <div class="w-12 h-12 bg-primary rounded-full flex items-center justify-center text-white text-xl">
+                                        <i class="fas fa-user-md"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-xl font-bold text-gray-800">Dr. ${doctor.doctor_name || (doctor.user?.first_name || '') + ' ' + (doctor.user?.last_name || '') || 'N/A'}</h4>
+                                        <p class="text-sm text-gray-500 capitalize">${doctor.specialization || 'N/A'}</p>
+                                    </div>
+                                </div>
+                                <div class="ml-15 space-y-2">
+                                    <p class="text-gray-600"><i class="fas fa-envelope mr-2 text-primary"></i>${doctor.email || 'N/A'}</p>
+                                    <p class="text-gray-600"><i class="fas fa-phone mr-2 text-primary"></i>${doctor.phone || 'N/A'}</p>
+                                    <p class="text-gray-600"><i class="fas fa-certificate mr-2 text-primary"></i>License: ${doctor.license_number || 'N/A'}</p>
+                                    <p class="text-gray-600"><i class="fas fa-graduation-cap mr-2 text-primary"></i>${doctor.qualification || 'N/A'}</p>
+                                    <p class="text-gray-600"><i class="fas fa-rupee-sign mr-2 text-primary"></i>Consultation Fee: ₹${doctor.consultation_fee || '0'}</p>
+                                    ${doctor.experience_years ? `<p class="text-gray-600"><i class="fas fa-calendar mr-2 text-primary"></i>${doctor.experience_years} years experience</p>` : ''}
+                                </div>
+                            </div>
+                            <div class="flex items-center">
+                                ${doctor.is_available ? '<span class="px-3 py-1 bg-green-100 text-green-800 text-xs rounded-full font-semibold">Available</span>' : '<span class="px-3 py-1 bg-gray-100 text-gray-800 text-xs rounded-full font-semibold">Unavailable</span>'}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        } else if (type === 'pharmacy') {
+            list.innerHTML = users.map(pharmacy => `
+                <div class="bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-200 border-l-4 border-blue-500">
+                    <div class="p-6">
+                        <div class="flex justify-between items-start">
+                            <div class="flex-1">
+                                <div class="flex items-center space-x-3 mb-3">
+                                    <div class="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white text-xl">
+                                        <i class="fas fa-pills"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-xl font-bold text-gray-800">${pharmacy.name || 'N/A'}</h4>
+                                        <p class="text-sm text-gray-500">${pharmacy.village || 'N/A'}, ${pharmacy.district || 'N/A'}</p>
+                                    </div>
+                                </div>
+                                <div class="ml-15 space-y-2">
+                                    <p class="text-gray-600"><i class="fas fa-user mr-2 text-blue-500"></i>Owner: ${pharmacy.user?.first_name || 'N/A'}</p>
+                                    <p class="text-gray-600"><i class="fas fa-envelope mr-2 text-blue-500"></i>${pharmacy.user?.email || 'N/A'}</p>
+                                    <p class="text-gray-600"><i class="fas fa-phone mr-2 text-blue-500"></i>${pharmacy.user?.phone || 'N/A'}</p>
+                                    <p class="text-gray-600"><i class="fas fa-certificate mr-2 text-blue-500"></i>License: ${pharmacy.license_number || 'N/A'}</p>
+                                    <p class="text-gray-600"><i class="fas fa-map-marker-alt mr-2 text-blue-500"></i>${pharmacy.address || 'N/A'}</p>
+                                    <p class="text-gray-600"><i class="fas fa-map-pin mr-2 text-blue-500"></i>${pharmacy.state || 'N/A'} - ${pharmacy.pincode || 'N/A'}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center">
+                                ${pharmacy.is_active ? '<span class="px-3 py-1 bg-green-100 text-green-800 text-xs rounded-full font-semibold">Active</span>' : '<span class="px-3 py-1 bg-gray-100 text-gray-800 text-xs rounded-full font-semibold">Inactive</span>'}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        } else {
+            list.innerHTML = users.map(patient => `
+                <div class="bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-200 border-l-4 border-purple-500">
+                    <div class="p-6">
+                        <div class="flex justify-between items-start">
+                            <div class="flex-1">
+                                <div class="flex items-center space-x-3 mb-3">
+                                    <div class="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center text-white text-xl">
+                                        <i class="fas fa-user-injured"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-xl font-bold text-gray-800">${(patient.user?.first_name || '') + ' ' + (patient.user?.last_name || '') || patient.name || 'N/A'}</h4>
+                                        <p class="text-sm text-gray-500">Patient ID: ${patient.id || 'N/A'}</p>
+                                    </div>
+                                </div>
+                                <div class="ml-15 space-y-2">
+                                    <p class="text-gray-600"><i class="fas fa-envelope mr-2 text-purple-500"></i>${patient.user?.email || patient.email || 'N/A'}</p>
+                                    <p class="text-gray-600"><i class="fas fa-phone mr-2 text-purple-500"></i>${patient.user?.phone || patient.phone || 'N/A'}</p>
+                                    ${patient.date_of_birth ? `<p class="text-gray-600"><i class="fas fa-birthday-cake mr-2 text-purple-500"></i>DOB: ${patient.date_of_birth}</p>` : ''}
+                                    ${patient.gender ? `<p class="text-gray-600"><i class="fas fa-venus-mars mr-2 text-purple-500"></i>Gender: ${patient.gender}</p>` : ''}
+                                    ${patient.address ? `<p class="text-gray-600"><i class="fas fa-map-marker-alt mr-2 text-purple-500"></i>${patient.address}</p>` : ''}
+                                    ${patient.village ? `<p class="text-gray-600"><i class="fas fa-map-pin mr-2 text-purple-500"></i>${patient.village}, ${patient.district || ''}</p>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+    } catch (error) {
+        console.error('Error loading users:', error);
+        list.innerHTML = `
+            <div class="bg-red-50 border-2 border-red-200 rounded-xl p-8 text-center">
+                <i class="fas fa-exclamation-triangle text-4xl text-red-500 mb-4"></i>
+                <p class="text-red-600 font-semibold mb-2">Error loading users</p>
+                <p class="text-red-500 text-sm">${error.message}</p>
+            </div>
+        `;
+        showModal('Error', `Failed to load users: ${error.message}`, 'error');
+    }
+}
+
+// Load applications on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadApplications('doctor');
+});
+</script>
+{% endblock %}

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Nabha Health Connect{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4CAF50',
+                        secondary: '#2196F3',
+                    }
+                }
+            }
+        }
+    </script>
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="bg-gray-50">
+    {% if messages %}
+        <div class="fixed top-4 right-4 z-50 space-y-2">
+            {% for message in messages %}
+                <div class="bg-{{ message.tags }}-100 border border-{{ message.tags }}-400 text-{{ message.tags }}-700 px-4 py-3 rounded relative shadow-lg" role="alert">
+                    <span class="block sm:inline">{{ message }}</span>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    
+    {% block content %}{% endblock %}
+    
+    <!-- Modal Component -->
+    <div id="modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+        <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 transform transition-all">
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 id="modalTitle" class="text-xl font-semibold text-gray-800"></h3>
+                    <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="mb-4">
+                    <p id="modalMessage" class="text-gray-600"></p>
+                </div>
+                <div class="flex justify-end">
+                    <button onclick="closeModal()" id="modalButton" class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-green-600 transition">
+                        OK
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showModal(title, message, type = 'info', onClose = null) {
+            const modal = document.getElementById('modal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalMessage = document.getElementById('modalMessage');
+            const modalButton = document.getElementById('modalButton');
+            
+            modalTitle.textContent = title;
+            modalMessage.textContent = message;
+            
+            // Set icon and color based on type
+            let iconClass = 'fas fa-info-circle';
+            let buttonClass = 'bg-primary hover:bg-green-600';
+            
+            if (type === 'success') {
+                iconClass = 'fas fa-check-circle text-green-500';
+                buttonClass = 'bg-green-500 hover:bg-green-600';
+            } else if (type === 'error') {
+                iconClass = 'fas fa-exclamation-circle text-red-500';
+                buttonClass = 'bg-red-500 hover:bg-red-600';
+            } else if (type === 'warning') {
+                iconClass = 'fas fa-exclamation-triangle text-yellow-500';
+                buttonClass = 'bg-yellow-500 hover:bg-yellow-600';
+            }
+            
+            modalButton.className = `px-6 py-2 ${buttonClass} text-white rounded-lg transition`;
+            
+            // Add icon to title if needed
+            modalTitle.innerHTML = `<i class="${iconClass} mr-2"></i>${title}`;
+            
+            modal.classList.remove('hidden');
+            
+            // Store callback
+            if (onClose) {
+                modalButton.onclick = function() {
+                    closeModal();
+                    onClose();
+                };
+            } else {
+                modalButton.onclick = closeModal;
+            }
+        }
+        
+        function closeModal() {
+            document.getElementById('modal').classList.add('hidden');
+        }
+        
+        // Close modal on outside click
+        document.getElementById('modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+        
+        // Close modal on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+        
+        // Function to show input modal (for rejection reason, etc.)
+        function showInputModal(title, placeholder, callback) {
+            const inputModal = document.createElement('div');
+            inputModal.className = 'fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center';
+            inputModal.id = 'inputModal';
+            inputModal.innerHTML = `
+                <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+                    <div class="p-6">
+                        <h3 class="text-xl font-semibold mb-4">${title}</h3>
+                        <textarea id="inputModalText" rows="4" class="w-full px-4 py-2 border border-gray-300 rounded-lg mb-4 focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="${placeholder}"></textarea>
+                        <div class="flex justify-end space-x-2">
+                            <button onclick="document.getElementById('inputModal').remove();" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">Cancel</button>
+                            <button id="inputModalSubmit" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-green-600">Submit</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(inputModal);
+            
+            document.getElementById('inputModalSubmit').onclick = function() {
+                const value = document.getElementById('inputModalText').value;
+                inputModal.remove();
+                if (value && value.trim() !== '') {
+                    callback(value);
+                }
+            };
+            
+            // Focus on textarea
+            setTimeout(() => {
+                document.getElementById('inputModalText').focus();
+            }, 100);
+        }
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
+

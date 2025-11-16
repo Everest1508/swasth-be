@@ -18,6 +18,8 @@ class PharmacyViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if user.role == 'pharmacy':
             return Pharmacy.objects.filter(user=user)
+        elif user.role == 'admin':
+            return Pharmacy.objects.all()
         return Pharmacy.objects.filter(is_active=True)
     
     def perform_create(self, serializer):

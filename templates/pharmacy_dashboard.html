@@ -1,0 +1,835 @@
+{% extends 'base.html' %}
+
+{% block title %}Pharmacy Dashboard - Nabha Health Connect{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <!-- Sidebar -->
+    <div class="fixed inset-y-0 left-0 w-64 bg-white shadow-xl z-30">
+        <div class="h-full flex flex-col">
+            <!-- Logo -->
+            <div class="p-6 border-b border-gray-200">
+                <h1 class="text-2xl font-bold text-primary">
+                    <i class="fas fa-heartbeat mr-2"></i>Nabha Health
+                </h1>
+                <p class="text-xs text-gray-500 mt-1">Pharmacy Portal</p>
+            </div>
+            
+            <!-- Navigation -->
+            <nav class="flex-1 px-4 py-6 space-y-2">
+                <button onclick="showSection('inventory')" id="nav-inventory" 
+                    class="w-full flex items-center px-4 py-3 text-left rounded-lg transition-all duration-200 bg-primary text-white shadow-md">
+                    <i class="fas fa-boxes w-5 mr-3"></i>
+                    <span class="font-medium">Inventory</span>
+                </button>
+                <button onclick="showSection('add-stock')" id="nav-add-stock" 
+                    class="w-full flex items-center px-4 py-3 text-left rounded-lg transition-all duration-200 text-gray-700 hover:bg-gray-100">
+                    <i class="fas fa-plus-circle w-5 mr-3"></i>
+                    <span class="font-medium">Add Stock</span>
+                </button>
+                <button onclick="showSection('low-stock')" id="nav-low-stock" 
+                    class="w-full flex items-center px-4 py-3 text-left rounded-lg transition-all duration-200 text-gray-700 hover:bg-gray-100">
+                    <i class="fas fa-exclamation-triangle w-5 mr-3"></i>
+                    <span class="font-medium">Low Stock Alerts</span>
+                </button>
+            </nav>
+            
+            <!-- User Info -->
+            <div class="p-4 border-t border-gray-200">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white font-semibold">
+                        {{ user.username|first|upper }}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-gray-900 truncate">{{ user.get_full_name|default:user.username }}</p>
+                        <p class="text-xs text-gray-500">Pharmacy</p>
+                    </div>
+                </div>
+                <a href="{% url 'logout' %}" class="mt-3 w-full block text-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition">
+                    <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="ml-64">
+        <!-- Header -->
+        <header class="bg-white shadow-sm border-b border-gray-200">
+            <div class="px-8 py-4">
+                <h2 class="text-2xl font-bold text-gray-800">Dashboard</h2>
+                <p class="text-sm text-gray-500 mt-1">Manage your medicine inventory and stock</p>
+            </div>
+        </header>
+
+        <!-- Inventory Section -->
+        <div id="inventory" class="p-8">
+            <div class="max-w-7xl mx-auto">
+                <!-- Section Header -->
+                <div class="mb-6">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-2">Medicine Inventory</h3>
+                    <p class="text-gray-600">View and manage your current stock</p>
+                </div>
+
+                <!-- Search and Filter Bar -->
+                <div class="bg-white rounded-xl shadow-md p-4 mb-6">
+                    <div class="grid md:grid-cols-4 gap-4">
+                        <div class="md:col-span-2">
+                            <div class="relative">
+                                <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                <input type="text" id="searchInput" placeholder="Search by medicine name..." 
+                                    class="w-full pl-10 pr-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition">
+                            </div>
+                        </div>
+                        <div>
+                            <select id="stockFilter" 
+                                class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition">
+                                <option value="all">All Stock</option>
+                                <option value="in_stock">In Stock</option>
+                                <option value="low_stock">Low Stock</option>
+                                <option value="out_of_stock">Out of Stock</option>
+                            </select>
+                        </div>
+                        <div>
+                            <select id="sortBy" 
+                                class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition">
+                                <option value="name_asc">Name (A-Z)</option>
+                                <option value="name_desc">Name (Z-A)</option>
+                                <option value="stock_asc">Stock (Low-High)</option>
+                                <option value="stock_desc">Stock (High-Low)</option>
+                                <option value="price_asc">Price (Low-High)</option>
+                                <option value="price_desc">Price (High-Low)</option>
+                                <option value="expiry_asc">Expiry (Soonest)</option>
+                                <option value="expiry_desc">Expiry (Latest)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Inventory Table -->
+                <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortTable('name')">
+                                        Medicine Name <i id="sort-name" class="fas fa-sort ml-1 text-gray-400"></i>
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortTable('stock')">
+                                        Stock <i id="sort-stock" class="fas fa-sort ml-1 text-gray-400"></i>
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortTable('price')">
+                                        Price <i id="sort-price" class="fas fa-sort ml-1 text-gray-400"></i>
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortTable('expiry')">
+                                        Expiry Date <i id="sort-expiry" class="fas fa-sort ml-1 text-gray-400"></i>
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Status
+                                    </th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Actions
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody id="inventoryTableBody" class="bg-white divide-y divide-gray-200">
+                                <tr>
+                                    <td colspan="6" class="px-6 py-12 text-center">
+                                        <i class="fas fa-spinner fa-spin text-4xl text-primary mb-4"></i>
+                                        <p class="text-gray-600">Loading inventory...</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="inventoryPagination" class="bg-gray-50 px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+                        <!-- Pagination will be added here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Stock Section -->
+        <div id="add-stock" class="p-8" style="display: none;">
+            <div class="max-w-7xl mx-auto">
+                <!-- Section Header -->
+                <div class="mb-6">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-2">Add Medicine Stock</h3>
+                    <p class="text-gray-600">Add new medicines or update existing stock</p>
+                </div>
+
+                <!-- Add Stock Form -->
+                <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-primary">
+                    <form id="stockForm" class="space-y-6">
+                        <div class="grid md:grid-cols-3 gap-6">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Medicine Name *</label>
+                                <input type="text" id="medicineName" name="medicine_name" required
+                                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition"
+                                    placeholder="Enter medicine name">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Strength</label>
+                                <input type="text" id="medicineStrength" name="medicine_strength"
+                                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition"
+                                    placeholder="e.g., 500mg, 10ml">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Form</label>
+                                <select id="medicineForm" name="medicine_form"
+                                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition">
+                                    <option value="Tablet">Tablet</option>
+                                    <option value="Capsule">Capsule</option>
+                                    <option value="Syrup">Syrup</option>
+                                    <option value="Injection">Injection</option>
+                                    <option value="Cream">Cream</option>
+                                    <option value="Ointment">Ointment</option>
+                                    <option value="Drops">Drops</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Stock Quantity *</label>
+                                <input type="number" id="stockQuantity" name="stock_quantity" required min="0"
+                                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition"
+                                    placeholder="Enter quantity">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Price (₹) *</label>
+                                <input type="number" id="price" name="price" required step="0.01" min="0"
+                                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition"
+                                    placeholder="Enter price">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Expiry Date</label>
+                                <input type="date" id="expiryDate" name="expiry_date"
+                                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Low Stock Threshold</label>
+                                <input type="number" id="lowStockThreshold" name="low_stock_threshold" min="0" value="10"
+                                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition"
+                                    placeholder="Alert when stock goes below this">
+                            </div>
+                        </div>
+                        <div class="flex justify-end">
+                            <button type="submit" 
+                                class="px-6 py-3 bg-primary text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all duration-200 transform hover:-translate-y-0.5">
+                                <i class="fas fa-plus mr-2"></i>Add Stock
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Low Stock Alerts Section -->
+        <div id="low-stock" class="p-8" style="display: none;">
+            <div class="max-w-7xl mx-auto">
+                <!-- Section Header -->
+                <div class="mb-6">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-2">Low Stock Alerts</h3>
+                    <p class="text-gray-600">Medicines that need restocking</p>
+                </div>
+
+                <!-- Low Stock List -->
+                <div id="lowStockList" class="space-y-4">
+                    <div class="bg-white rounded-xl shadow-md p-12 text-center">
+                        <i class="fas fa-spinner fa-spin text-4xl text-primary mb-4"></i>
+                        <p class="text-gray-600">Loading low stock alerts...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Section navigation
+function showSection(sectionName) {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    // Hide all sections
+    document.getElementById('inventory').style.display = 'none';
+    document.getElementById('add-stock').style.display = 'none';
+    document.getElementById('low-stock').style.display = 'none';
+    
+    // Reset navigation buttons
+    document.getElementById('nav-inventory').className = 'w-full flex items-center px-4 py-3 text-left rounded-lg transition-all duration-200 text-gray-700 hover:bg-gray-100';
+    document.getElementById('nav-add-stock').className = 'w-full flex items-center px-4 py-3 text-left rounded-lg transition-all duration-200 text-gray-700 hover:bg-gray-100';
+    document.getElementById('nav-low-stock').className = 'w-full flex items-center px-4 py-3 text-left rounded-lg transition-all duration-200 text-gray-700 hover:bg-gray-100';
+    
+    // Show selected section
+    if (sectionName === 'inventory') {
+        document.getElementById('inventory').style.display = 'block';
+        document.getElementById('nav-inventory').className = 'w-full flex items-center px-4 py-3 text-left rounded-lg transition-all duration-200 bg-primary text-white shadow-md';
+        loadInventory();
+    } else if (sectionName === 'add-stock') {
+        document.getElementById('add-stock').style.display = 'block';
+        document.getElementById('nav-add-stock').className = 'w-full flex items-center px-4 py-3 text-left rounded-lg transition-all duration-200 bg-primary text-white shadow-md';
+    } else if (sectionName === 'low-stock') {
+        document.getElementById('low-stock').style.display = 'block';
+        document.getElementById('nav-low-stock').className = 'w-full flex items-center px-4 py-3 text-left rounded-lg transition-all duration-200 bg-primary text-white shadow-md';
+        loadLowStock();
+    }
+    
+    if (window.history && window.history.pushState) {
+        window.history.pushState(null, null, '/dashboard/');
+    }
+}
+
+// Global variables for inventory management
+let allInventoryData = [];
+let currentSort = { field: 'name', direction: 'asc' };
+let currentFilter = 'all';
+let currentSearch = '';
+
+// Load inventory
+async function loadInventory() {
+    const tbody = document.getElementById('inventoryTableBody');
+    tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-12 text-center"><i class="fas fa-spinner fa-spin text-4xl text-primary mb-4"></i><p class="text-gray-600">Loading inventory...</p></td></tr>';
+    
+    try {
+        const response = await fetch('/api/medicines/inventory/', {
+            credentials: 'include'
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to load inventory');
+        }
+        
+        const data = await response.json();
+        allInventoryData = data.results || data || [];
+        
+        updateSortIndicators();
+        applyFiltersAndSort();
+    } catch (error) {
+        console.error('Error loading inventory:', error);
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="6" class="px-6 py-12 text-center">
+                    <div class="bg-red-50 border-2 border-red-200 rounded-xl p-8">
+                        <i class="fas fa-exclamation-triangle text-4xl text-red-500 mb-4"></i>
+                        <p class="text-red-600 font-semibold mb-2">Error loading inventory</p>
+                        <p class="text-red-500 text-sm">${error.message}</p>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }
+}
+
+function applyFiltersAndSort() {
+    let filtered = [...allInventoryData];
+    
+    // Apply search filter
+    if (currentSearch) {
+        const searchLower = currentSearch.toLowerCase();
+        filtered = filtered.filter(item => 
+            (item.medicine_name || '').toLowerCase().includes(searchLower) ||
+            (item.medicine_brand || '').toLowerCase().includes(searchLower)
+        );
+    }
+    
+    // Apply stock filter
+    if (currentFilter === 'low_stock') {
+        filtered = filtered.filter(item => item.is_low_stock && !item.is_out_of_stock);
+    } else if (currentFilter === 'out_of_stock') {
+        filtered = filtered.filter(item => item.is_out_of_stock);
+    } else if (currentFilter === 'in_stock') {
+        filtered = filtered.filter(item => !item.is_out_of_stock);
+    }
+    
+    // Apply sorting
+    filtered.sort((a, b) => {
+        let aVal, bVal;
+        switch (currentSort.field) {
+            case 'name':
+                aVal = (a.medicine_name || '').toLowerCase();
+                bVal = (b.medicine_name || '').toLowerCase();
+                break;
+            case 'stock':
+                aVal = a.stock_quantity || 0;
+                bVal = b.stock_quantity || 0;
+                break;
+            case 'price':
+                aVal = parseFloat(a.price || 0);
+                bVal = parseFloat(b.price || 0);
+                break;
+            case 'expiry':
+                aVal = a.expiry_date ? new Date(a.expiry_date) : new Date('9999-12-31');
+                bVal = b.expiry_date ? new Date(b.expiry_date) : new Date('9999-12-31');
+                break;
+            default:
+                return 0;
+        }
+        
+        if (aVal < bVal) return currentSort.direction === 'asc' ? -1 : 1;
+        if (aVal > bVal) return currentSort.direction === 'asc' ? 1 : -1;
+        return 0;
+    });
+    
+    renderInventoryTable(filtered);
+}
+
+function renderInventoryTable(inventory) {
+    const tbody = document.getElementById('inventoryTableBody');
+    
+    if (inventory.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="6" class="px-6 py-12 text-center">
+                    <i class="fas fa-box-open text-6xl text-gray-300 mb-4"></i>
+                    <p class="text-xl font-semibold text-gray-600 mb-2">No Inventory Found</p>
+                    <p class="text-gray-500 mb-4">${currentSearch || currentFilter !== 'all' ? 'Try adjusting your search or filters.' : 'Start by adding medicine stock.'}</p>
+                    ${!currentSearch && currentFilter === 'all' ? `<button onclick="showSection('add-stock')" class="px-6 py-3 bg-primary text-white rounded-lg font-medium shadow-md hover:shadow-lg transition">
+                        <i class="fas fa-plus mr-2"></i>Add Stock
+                    </button>` : ''}
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    tbody.innerHTML = inventory.map(item => {
+        const statusClass = item.is_out_of_stock ? 'bg-red-100 text-red-800' : 
+                           item.is_low_stock ? 'bg-yellow-100 text-yellow-800' : 
+                           'bg-green-100 text-green-800';
+        const statusText = item.is_out_of_stock ? 'Out of Stock' : 
+                          item.is_low_stock ? 'Low Stock' : 
+                          'In Stock';
+        const statusIcon = item.is_out_of_stock ? 'fa-times-circle' : 
+                          item.is_low_stock ? 'fa-exclamation-triangle' : 
+                          'fa-check-circle';
+        
+        const expiryDate = item.expiry_date ? new Date(item.expiry_date).toLocaleDateString() : 'N/A';
+        const expiryClass = item.expiry_date && new Date(item.expiry_date) < new Date() ? 'text-red-600 font-semibold' : '';
+        
+        return `
+            <tr class="hover:bg-gray-50 transition ${item.is_out_of_stock ? 'bg-red-50' : item.is_low_stock ? 'bg-yellow-50' : ''}">
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 h-10 w-10 ${item.is_out_of_stock ? 'bg-red-500' : item.is_low_stock ? 'bg-yellow-500' : 'bg-green-500'} rounded-full flex items-center justify-center text-white">
+                            <i class="fas fa-pills"></i>
+                        </div>
+                        <div class="ml-4">
+                            <div class="text-sm font-medium text-gray-900">${item.medicine_name || 'N/A'}</div>
+                            <div class="text-sm text-gray-500">${item.medicine_brand || ''}</div>
+                        </div>
+                    </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm font-semibold text-gray-900">${item.stock_quantity || 0}</div>
+                    <div class="text-xs text-gray-500">Threshold: ${item.low_stock_threshold || 10}</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm font-semibold text-gray-900">₹${parseFloat(item.price || 0).toFixed(2)}</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm ${expiryClass}">${expiryDate}</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClass}">
+                        <i class="fas ${statusIcon} mr-1"></i>${statusText}
+                    </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <button onclick="editStock(${item.id})" 
+                        class="text-blue-600 hover:text-blue-900 mr-3 px-3 py-1 rounded hover:bg-blue-50 transition">
+                        <i class="fas fa-edit mr-1"></i>Edit
+                    </button>
+                    <button onclick="deleteStock(${item.id})" 
+                        class="text-red-600 hover:text-red-900 px-3 py-1 rounded hover:bg-red-50 transition">
+                        <i class="fas fa-trash mr-1"></i>Delete
+                    </button>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function sortTable(field) {
+    if (currentSort.field === field) {
+        currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+    } else {
+        currentSort.field = field;
+        currentSort.direction = 'asc';
+    }
+    updateSortIndicators();
+    applyFiltersAndSort();
+}
+
+function updateSortIndicators() {
+    // Reset all indicators
+    ['name', 'stock', 'price', 'expiry'].forEach(field => {
+        const icon = document.getElementById(`sort-${field}`);
+        if (icon) {
+            icon.className = 'fas fa-sort ml-1 text-gray-400';
+        }
+    });
+    
+    // Set active indicator
+    const activeIcon = document.getElementById(`sort-${currentSort.field}`);
+    if (activeIcon) {
+        activeIcon.className = `fas fa-sort-${currentSort.direction === 'asc' ? 'up' : 'down'} ml-1 text-primary`;
+    }
+}
+
+// Event listeners for search and filters
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const stockFilter = document.getElementById('stockFilter');
+    const sortBy = document.getElementById('sortBy');
+    
+    if (searchInput) {
+        searchInput.addEventListener('input', function(e) {
+            currentSearch = e.target.value;
+            applyFiltersAndSort();
+        });
+    }
+    
+    if (stockFilter) {
+        stockFilter.addEventListener('change', function(e) {
+            currentFilter = e.target.value;
+            applyFiltersAndSort();
+        });
+    }
+    
+    if (sortBy) {
+        sortBy.addEventListener('change', function(e) {
+            const value = e.target.value;
+            if (value.startsWith('name_')) {
+                currentSort.field = 'name';
+                currentSort.direction = value.endsWith('_asc') ? 'asc' : 'desc';
+            } else if (value.startsWith('stock_')) {
+                currentSort.field = 'stock';
+                currentSort.direction = value.endsWith('_asc') ? 'asc' : 'desc';
+            } else if (value.startsWith('price_')) {
+                currentSort.field = 'price';
+                currentSort.direction = value.endsWith('_asc') ? 'asc' : 'desc';
+            } else if (value.startsWith('expiry_')) {
+                currentSort.field = 'expiry';
+                currentSort.direction = value.endsWith('_asc') ? 'asc' : 'desc';
+            }
+            applyFiltersAndSort();
+        });
+    }
+});
+
+// Load low stock alerts
+async function loadLowStock() {
+    const list = document.getElementById('lowStockList');
+    list.innerHTML = '<div class="bg-white rounded-xl shadow-md p-12 text-center"><i class="fas fa-spinner fa-spin text-4xl text-primary mb-4"></i><p class="text-gray-600">Loading low stock alerts...</p></div>';
+    
+    try {
+        const response = await fetch('/api/medicines/inventory/low_stock/', {
+            credentials: 'include'
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to load low stock alerts');
+        }
+        
+        const data = await response.json();
+        const lowStock = data.results || data || [];
+        
+        if (lowStock.length === 0) {
+            list.innerHTML = `
+                <div class="bg-white rounded-xl shadow-md p-12 text-center">
+                    <i class="fas fa-check-circle text-6xl text-green-300 mb-4"></i>
+                    <p class="text-xl font-semibold text-gray-600 mb-2">All Stock Levels Good</p>
+                    <p class="text-gray-500">No low stock alerts at this time.</p>
+                </div>
+            `;
+            return;
+        }
+        
+        list.innerHTML = lowStock.map(item => `
+            <div class="bg-yellow-50 border-l-4 border-yellow-500 rounded-xl shadow-md p-6">
+                <div class="flex justify-between items-start">
+                    <div class="flex-1">
+                        <div class="flex items-center space-x-3 mb-2">
+                            <i class="fas fa-exclamation-triangle text-yellow-600 text-2xl"></i>
+                            <h4 class="text-xl font-bold text-gray-800">${item.medicine_name || item.medicine?.name || 'Medicine'}</h4>
+                        </div>
+                        <p class="text-gray-600 ml-10"><span class="font-semibold">Current Stock:</span> ${item.stock_quantity} | <span class="font-semibold">Threshold:</span> ${item.low_stock_threshold}</p>
+                        <p class="text-yellow-700 ml-10 mt-2"><i class="fas fa-info-circle mr-2"></i>Stock is below the threshold. Please restock soon.</p>
+                    </div>
+                    <button onclick="showSection('add-stock'); document.getElementById('medicineName').value='${item.medicine_name || item.medicine?.name || ''}';" 
+                        class="px-4 py-2 bg-primary text-white rounded-lg font-medium shadow-md hover:shadow-lg transition">
+                        <i class="fas fa-plus mr-2"></i>Restock
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    } catch (error) {
+        console.error('Error loading low stock:', error);
+        list.innerHTML = `
+            <div class="bg-red-50 border-2 border-red-200 rounded-xl p-8 text-center">
+                <i class="fas fa-exclamation-triangle text-4xl text-red-500 mb-4"></i>
+                <p class="text-red-600 font-semibold mb-2">Error loading low stock alerts</p>
+                <p class="text-red-500 text-sm">${error.message}</p>
+            </div>
+        `;
+    }
+}
+
+// Handle stock form submission
+document.getElementById('stockForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData);
+    data.low_stock_threshold = parseInt(data.low_stock_threshold) || 10;
+    
+    try {
+        // First, get or create medicine
+        const medicineResponse = await fetch('/api/medicines/master/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            credentials: 'include',
+            body: JSON.stringify({
+                name: data.medicine_name,
+                strength: data.medicine_strength || 'N/A',
+                dosage_form: data.medicine_form || 'Tablet'
+            })
+        });
+        
+        let medicine;
+        if (medicineResponse.ok) {
+            const medicineData = await medicineResponse.json();
+            medicine = medicineData;
+        } else {
+            // Try to find existing medicine
+            const searchResponse = await fetch(`/api/medicines/master/?search=${encodeURIComponent(data.medicine_name)}`, {
+                credentials: 'include'
+            });
+            if (searchResponse.ok) {
+                const searchData = await searchResponse.json();
+                medicine = searchData.results?.[0] || searchData[0];
+            }
+        }
+        
+        if (!medicine) {
+            showModal('Error', 'Failed to create or find medicine', 'error');
+            return;
+        }
+        
+        // Get pharmacy profile
+        const pharmacyResponse = await fetch('/api/pharmacies/profiles/', {
+            credentials: 'include'
+        });
+        
+        if (!pharmacyResponse.ok) {
+            throw new Error('Failed to load pharmacy profile');
+        }
+        
+        const pharmacyData = await pharmacyResponse.json();
+        const pharmacy = pharmacyData.results?.[0] || pharmacyData[0];
+        
+        if (!pharmacy) {
+            showModal('Error', 'Pharmacy profile not found', 'error');
+            return;
+        }
+        
+        // Add to inventory
+        const response = await fetch('/api/medicines/inventory/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            credentials: 'include',
+            body: JSON.stringify({
+                pharmacy: pharmacy.id,
+                medicine: medicine.id,
+                stock_quantity: parseInt(data.stock_quantity),
+                price: parseFloat(data.price),
+                expiry_date: data.expiry_date || null,
+                low_stock_threshold: data.low_stock_threshold
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            showModal('Success', 'Stock added successfully!', 'success', function() {
+                e.target.reset();
+                loadInventory();
+            });
+        } else {
+            const errorMsg = result.error || result.detail || 'Failed to add stock';
+            showModal('Error', errorMsg, 'error');
+        }
+    } catch (error) {
+        showModal('Error', 'Error adding stock. Please try again.', 'error');
+    }
+});
+
+let editingItemId = null;
+
+async function editStock(itemId) {
+    editingItemId = itemId;
+    const item = allInventoryData.find(i => i.id === itemId);
+    if (!item) return;
+    
+    // Create edit modal
+    const editModal = document.createElement('div');
+    editModal.className = 'fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center';
+    editModal.id = 'editStockModal';
+    editModal.innerHTML = `
+        <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-2xl font-bold text-gray-800">Edit Stock</h3>
+                    <button onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                <form id="editStockForm" class="space-y-4">
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Medicine Name</label>
+                            <input type="text" id="editMedicineName" value="${item.medicine_name || ''}" readonly
+                                class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg bg-gray-100">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Stock Quantity *</label>
+                            <input type="number" id="editStockQuantity" name="stock_quantity" required min="0" value="${item.stock_quantity || 0}"
+                                class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Price (₹) *</label>
+                            <input type="number" id="editPrice" name="price" required step="0.01" min="0" value="${item.price || 0}"
+                                class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Expiry Date</label>
+                            <input type="date" id="editExpiryDate" name="expiry_date" value="${item.expiry_date || ''}"
+                                class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Low Stock Threshold</label>
+                            <input type="number" id="editLowStockThreshold" name="low_stock_threshold" min="0" value="${item.low_stock_threshold || 10}"
+                                class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary">
+                        </div>
+                    </div>
+                    <div class="flex justify-end space-x-4 pt-4 border-t border-gray-200">
+                        <button type="button" onclick="closeEditModal()" 
+                            class="px-6 py-2 border-2 border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50">
+                            Cancel
+                        </button>
+                        <button type="submit" 
+                            class="px-6 py-2 bg-primary text-white rounded-lg font-medium shadow-md hover:shadow-lg transition">
+                            <i class="fas fa-save mr-2"></i>Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(editModal);
+    
+    // Close modal on outside click
+    editModal.addEventListener('click', function(e) {
+        if (e.target === editModal) {
+            closeEditModal();
+        }
+    });
+    
+    // Close modal on Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && document.getElementById('editStockModal')) {
+            closeEditModal();
+        }
+    });
+    
+    document.getElementById('editStockForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        await saveStockEdit(itemId);
+    });
+}
+
+function closeEditModal() {
+    const modal = document.getElementById('editStockModal');
+    if (modal) {
+        modal.remove();
+    }
+    editingItemId = null;
+}
+
+async function saveStockEdit(itemId) {
+    try {
+        const data = {
+            stock_quantity: parseInt(document.getElementById('editStockQuantity').value),
+            price: parseFloat(document.getElementById('editPrice').value),
+            expiry_date: document.getElementById('editExpiryDate').value || null,
+            low_stock_threshold: parseInt(document.getElementById('editLowStockThreshold').value) || 10
+        };
+        
+        const response = await fetch(`/api/medicines/inventory/${itemId}/`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            credentials: 'include',
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            showModal('Success', 'Stock updated successfully!', 'success', function() {
+                closeEditModal();
+                loadInventory();
+            });
+        } else {
+            const errorMsg = result.error || result.detail || 'Failed to update stock';
+            showModal('Error', errorMsg, 'error');
+        }
+    } catch (error) {
+        showModal('Error', 'Error updating stock. Please try again.', 'error');
+    }
+}
+
+async function deleteStock(itemId) {
+    showInputModal('Confirm Deletion', 'Are you sure you want to delete this stock item? Type "DELETE" to confirm:', function(confirmation) {
+        if (confirmation !== 'DELETE') {
+            showModal('Cancelled', 'Deletion cancelled.', 'info');
+            return;
+        }
+        
+        fetch(`/api/medicines/inventory/${itemId}/`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            credentials: 'include'
+        })
+        .then(response => {
+            if (response.ok) {
+                showModal('Success', 'Stock deleted successfully!', 'success', function() {
+                    loadInventory();
+                });
+            } else {
+                showModal('Error', 'Failed to delete stock.', 'error');
+            }
+        })
+        .catch(error => {
+            showModal('Error', 'Error deleting stock.', 'error');
+        });
+    });
+}
+
+// Load inventory on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadInventory();
+});
+</script>
+{% endblock %}

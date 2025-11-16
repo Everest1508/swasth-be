@@ -18,6 +18,8 @@ class DoctorViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if user.role == 'doctor':
             return Doctor.objects.filter(user=user)
+        elif user.role == 'admin':
+            return Doctor.objects.all()
         return Doctor.objects.filter(is_available=True)
     
     def perform_create(self, serializer):

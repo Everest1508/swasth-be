@@ -19,9 +19,18 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
+from .views import home, login_view, dashboard, apply_doctor, apply_pharmacy, logout_view
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    
+    # Web Portal Routes
+    path('', home, name='home'),
+    path('login/', login_view, name='login'),
+    path('logout/', logout_view, name='logout'),
+    path('dashboard/', dashboard, name='dashboard'),
+    path('apply/doctor/', apply_doctor, name='apply_doctor'),
+    path('apply/pharmacy/', apply_pharmacy, name='apply_pharmacy'),
     
     # API Documentation
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
@@ -38,6 +47,8 @@ urlpatterns = [
     path('api/ai-symptom-checker/', include('ai_symptom_checker.urls')),
     path('api/notifications/', include('notifications.urls')),
     path('api/analytics/', include('analytics.urls')),
+    path('api/applications/', include('applications.urls')),
+    path('api/smtp/', include('email_service.urls')),
 ]
 
 # Serve media files in development

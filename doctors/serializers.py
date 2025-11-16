@@ -6,7 +6,7 @@ class DoctorScheduleSerializer(serializers.ModelSerializer):
     class Meta:
         model = DoctorSchedule
         fields = '__all__'
-        read_only_fields = ('created_at', 'updated_at')
+        read_only_fields = ('doctor', 'created_at', 'updated_at')
 
 
 class DoctorSerializer(serializers.ModelSerializer):

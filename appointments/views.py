@@ -19,13 +19,46 @@ class AppointmentViewSet(viewsets.ModelViewSet):
     
     def get_queryset(self):
         user = self.request.user
+        queryset = Appointment.objects.none()
+        
+        # Handle special case: doctor=me in query params
+        doctor_param = self.request.query_params.get('doctor', None)
+        
         if user.role == 'patient':
-            return Appointment.objects.filter(patient__user=user)
+            queryset = Appointment.objects.filter(patient__user=user)
         elif user.role == 'doctor':
-            return Appointment.objects.filter(doctor__user=user)
+            # For doctors, always filter by their own appointments
+            # If doctor=me is provided, ignore it (already filtered)
+            queryset = Appointment.objects.filter(doctor__user=user)
         elif user.role == 'admin':
-            return Appointment.objects.all()
-        return Appointment.objects.none()
+            queryset = Appointment.objects.all()
+            # Admin can filter by specific doctor if provided (but not 'me')
+            if doctor_param and doctor_param != 'me':
+                queryset = queryset.filter(doctor_id=doctor_param)
+        
+        return queryset
+    
+    def filter_queryset(self, queryset):
+        """
+        Override to handle doctor=me parameter before Django Filter processes it
+        """
+        # Remove doctor=me from query params before filtering
+        if 'doctor' in self.request.query_params and self.request.query_params['doctor'] == 'me':
+            # Create a mutable copy
+            mutable_query_params = self.request.query_params.copy()
+            mutable_query_params.pop('doctor')
+            # Temporarily replace query_params
+            original_params = self.request.query_params
+            self.request._request.GET = mutable_query_params
+            try:
+                queryset = super().filter_queryset(queryset)
+            finally:
+                # Restore original
+                self.request._request.GET = original_params
+        else:
+            queryset = super().filter_queryset(queryset)
+        
+        return queryset
     
     @action(detail=False, methods=['post'])
     def check_availability(self, request):

@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+
+{% block title %}Apply as Pharmacy - Nabha Health Connect{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 py-12">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="bg-white rounded-lg shadow-lg p-8">
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">Pharmacy Application</h1>
+                <p class="text-gray-600">Join Nabha Health Connect as a pharmacy partner</p>
+            </div>
+
+            <form id="pharmacyApplicationForm" class="space-y-6">
+                {% csrf_token %}
+                
+                <!-- Owner Information -->
+                <div class="border-b border-gray-200 pb-6">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">Owner Information</h2>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Owner Name *</label>
+                            <input type="text" name="owner_name" required
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Email *</label>
+                            <input type="email" name="email" required
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Phone *</label>
+                            <input type="tel" name="phone" required
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pharmacy Information -->
+                <div class="border-b border-gray-200 pb-6">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">Pharmacy Information</h2>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Pharmacy Name *</label>
+                            <input type="text" name="pharmacy_name" required
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Address *</label>
+                            <textarea name="address" required rows="3"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"></textarea>
+                        </div>
+                        <div class="grid md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Village *</label>
+                                <input type="text" name="village" required
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">District *</label>
+                                <input type="text" name="district" required value="Patiala"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Pincode *</label>
+                                <input type="text" name="pincode" required
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">License Number *</label>
+                            <input type="text" name="license_number" required
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">License Document</label>
+                            <input type="file" name="license_document" accept=".pdf,.jpg,.jpeg,.png"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end space-x-4">
+                    <a href="{% url 'home' %}" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">Cancel</a>
+                    <button type="submit" class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-green-600 transition">
+                        Submit Application
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('pharmacyApplicationForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    
+    try {
+        const response = await fetch('/api/applications/pharmacies/', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            showModal('Success', 'Application submitted successfully! You will receive an email once it is reviewed.', 'success', function() {
+                window.location.href = '{% url "home" %}';
+            });
+        } else {
+            const errorMsg = data.error || data.detail || 'Failed to submit application';
+            showModal('Error', errorMsg, 'error');
+        }
+    } catch (error) {
+        showModal('Error', 'Error submitting application. Please try again.', 'error');
+    }
+});
+</script>
+{% endblock %}
+
